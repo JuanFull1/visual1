@@ -1,0 +1,485 @@
+/*
+
+
+// ESTUDIANTES
+
+
+conexion.php 
+
+<?php
+
+$conexion = new mysqli("localhost", "root", "", "estudiantes_db");
+
+if ($conexion->connect_error) {
+    die("Error de conexión: " . $conexion->connect_error);
+}
+
+?>
+
+
+
+guardar.php
+
+
+<?php
+include "conexion.php";
+
+$nombreEstudiante = $_POST["nombreEstudiante"];
+$edad = $_POST["edad"];
+$idMateria = $_POST["idMateria"];
+
+if ($idMateria == 1 || $idMateria == 2 || $idMateria == 3) {
+    $sql = "INSERT INTO estudiante(nombreEstudiante, edad, idMateria)
+            VALUES('$nombreEstudiante', '$edad', '$idMateria')";
+
+    if ($conexion->query($sql)) {
+        echo "Estudiante guardado correctamente";
+    } else {
+        echo "Error al guardar";
+    }
+} else {
+    echo "Materia no permitida";
+}
+?>
+
+
+
+index.php 
+
+
+
+<?php
+include "conexion.php";
+?>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Estudiantes</title>
+</head>
+<body>
+
+<h2>Gestion de Estudiantes</h2>
+
+<h3>Guardar estudiante</h3>
+
+<form id="formGuardar">
+    Estudiante:
+    <input type="text" name="nombreEstudiante" required>
+
+    Edad:
+    <input type="number" name="edad" required>
+
+    Materia:
+    <select name="idMateria">
+        <?php
+        $sql = "SELECT idMateria, nombreMateria FROM materia";
+        $resultado = $conexion->query($sql);
+
+        while ($fila = $resultado->fetch_assoc()) {
+            echo "<option value='".$fila["idMateria"]."'>".$fila["nombreMateria"]."</option>";
+        }
+        ?>
+    </select>
+
+    <button type="submit">Guardar</button>
+</form>
+
+<p id="mensaje"></p>
+
+<hr>
+
+<h3>Listar estudiantes por materia</h3>
+
+Materia:
+<select id="materiaBuscar">
+    <?php
+    $sql = "SELECT idMateria, nombreMateria FROM materia";
+    $resultado = $conexion->query($sql);
+
+    while ($fila = $resultado->fetch_assoc()) {
+        echo "<option value='".$fila["idMateria"]."'>".$fila["nombreMateria"]."</option>";
+    }
+    ?>
+</select>
+
+<button onclick="listar()">Listar</button>
+
+<br><br>
+
+<div id="resultado"></div>
+
+<script>
+document.getElementById("formGuardar").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    let datos = new FormData(this);
+
+    fetch("guardar.php", {
+        method: "POST",
+        body: datos
+    })
+    .then(res => res.text())
+    .then(data => {
+        document.getElementById("mensaje").innerHTML = data;
+        document.getElementById("formGuardar").reset();
+    });
+});
+
+function listar() {
+    let idMateria = document.getElementById("materiaBuscar").value;
+
+    fetch("listar.php?idMateria=" + idMateria)
+    .then(res => res.text())
+    .then(data => {
+        document.getElementById("resultado").innerHTML = data;
+    });
+}
+</script>
+
+</body>
+</html>
+
+
+
+
+
+listar.php 
+
+
+
+
+<?php
+include "conexion.php";
+
+$idMateria = $_GET["idMateria"];
+
+$sql = "SELECT e.idEstudiante, e.nombreEstudiante, e.edad, m.nombreMateria
+        FROM estudiante e
+        INNER JOIN materia m ON e.idMateria = m.idMateria
+        WHERE e.idMateria = $idMateria";
+
+$resultado = $conexion->query($sql);
+
+echo "<table border='1' cellpadding='8'>";
+echo "<tr><th>ID</th><th>Estudiante</th><th>Edad</th><th>Materia</th></tr>";
+
+while ($fila = $resultado->fetch_assoc()) {
+    echo "<tr>";
+    echo "<td>".$fila["idEstudiante"]."</td>";
+    echo "<td>".$fila["nombreEstudiante"]."</td>";
+    echo "<td>".$fila["edad"]."</td>";
+    echo "<td>".$fila["nombreMateria"]."</td>";
+    echo "</tr>";
+}
+
+echo "</table>";
+?>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+
+DROP DATABASE IF EXISTS estudiantes_db;
+CREATE DATABASE estudiantes_db;
+USE estudiantes_db;
+
+CREATE TABLE materia (
+    idMateria INT AUTO_INCREMENT PRIMARY KEY,
+    nombreMateria VARCHAR(50) NOT NULL UNIQUE
+);
+
+INSERT INTO materia (nombreMateria) VALUES
+('matematicas'),
+('lenguaje'),
+('programacion');
+
+CREATE TABLE estudiante (
+    idEstudiante INT AUTO_INCREMENT PRIMARY KEY,
+    nombreEstudiante VARCHAR(100) NOT NULL,
+    edad INT NOT NULL,
+    idMateria INT NOT NULL,
+    FOREIGN KEY (idMateria) REFERENCES materia(idMateria)
+);
+
+INSERT INTO estudiante (nombreEstudiante, edad, idMateria) VALUES
+('Juan Perez', 18, 1),
+('Maria Lopez', 19, 1),
+('Carlos Vera', 20, 2),
+('Ana Torres', 18, 2),
+('Luis Gomez', 21, 3),
+('Diana Ruiz', 20, 3);
+
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+productos
+
+
+
+conexion.php 
+
+<?php
+
+$conexion = new mysqli("localhost", "root", "", "productos");
+
+if ($conexion->connect_error) {
+    die("Error de conexión: " . $conexion->connect_error);
+}
+
+?>
+
+
+
+
+guardar.php
+
+
+<?php
+include "conexion.php";
+
+$nombreProducto = $_POST["nombreProducto"];
+$precio = $_POST["precio"];
+$idCategoria = $_POST["idCategoria"];
+
+if ($idCategoria == 1 || $idCategoria == 2 || $idCategoria == 3) {
+    $sql = "INSERT INTO producto(nombreProducto, precio, idCategoria)
+            VALUES('$nombreProducto', '$precio', '$idCategoria')";
+
+    if ($conexion->query($sql)) {
+        echo "Producto guardado correctamente";
+    } else {
+        echo "Error al guardar";
+    }
+} else {
+    echo "Categoria no permitida";
+}
+?>
+
+
+
+
+
+
+index.php
+
+
+
+<?php include "conexion.php"; ?>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Productos</title>
+</head>
+<body>
+
+<h2>Gestion de Productos</h2>
+
+<h3>Guardar producto</h3>
+
+<form id="formGuardar">
+    Producto:
+    <input type="text" name="nombreProducto" required>
+
+    Precio:
+    <input type="number" step="0.01" name="precio" required>
+
+    Categoria:
+    <select name="idCategoria" required>
+        <?php
+        $sql = "SELECT idCategoria, nombreCategoria FROM categoria";
+        $resultado = $conexion->query($sql);
+
+        while ($fila = $resultado->fetch_assoc()) {
+            echo "<option value='".$fila["idCategoria"]."'>".$fila["nombreCategoria"]."</option>";
+        }
+        ?>
+    </select>
+
+    <button type="submit">Guardar</button>
+</form>
+
+<p id="mensaje"></p>
+
+<hr>
+
+<h3>Listar productos por categoria</h3>
+
+Categoria:
+<select id="categoriaBuscar">
+    <?php
+    $sql = "SELECT idCategoria, nombreCategoria FROM categoria";
+    $resultado = $conexion->query($sql);
+
+    while ($fila = $resultado->fetch_assoc()) {
+        echo "<option value='".$fila["idCategoria"]."'>".$fila["nombreCategoria"]."</option>";
+    }
+    ?>
+</select>
+
+<button onclick="listar()">Listar</button>
+
+<br><br>
+
+<div id="resultado"></div>
+
+<script>
+document.getElementById("formGuardar").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    let datos = new FormData(this);
+
+    fetch("guardar.php", {
+        method: "POST",
+        body: datos
+    })
+    .then(res => res.text())
+    .then(data => {
+        document.getElementById("mensaje").innerHTML = data;
+        document.getElementById("formGuardar").reset();
+    });
+});
+
+function listar() {
+    let idCategoria = document.getElementById("categoriaBuscar").value;
+
+    fetch("listar.php?idCategoria=" + idCategoria)
+    .then(res => res.text())
+    .then(data => {
+        document.getElementById("resultado").innerHTML = data;
+    });
+}
+</script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+listar.php 
+
+
+
+
+<?php
+include "conexion.php";
+
+$idCategoria = $_GET["idCategoria"];
+
+$sql = "SELECT p.idProducto, p.nombreProducto, p.precio, c.nombreCategoria
+        FROM producto p
+        INNER JOIN categoria c ON p.idCategoria = c.idCategoria
+        WHERE p.idCategoria = $idCategoria";
+
+$resultado = $conexion->query($sql);
+
+echo "<table border='1' cellpadding='8'>";
+echo "<tr><th>ID</th><th>Producto</th><th>Precio</th><th>Categoria</th></tr>";
+
+while ($fila = $resultado->fetch_assoc()) {
+    echo "<tr>";
+    echo "<td>".$fila["idProducto"]."</td>";
+    echo "<td>".$fila["nombreProducto"]."</td>";
+    echo "<td>".$fila["precio"]."</td>";
+    echo "<td>".$fila["nombreCategoria"]."</td>";
+    echo "</tr>";
+}
+
+echo "</table>";
+?>
+
+
+
+
+
+/*
+DROP DATABASE IF EXISTS productos;
+CREATE DATABASE productos;
+USE productos;
+
+CREATE TABLE categoria (
+    idCategoria INT AUTO_INCREMENT PRIMARY KEY,
+    nombreCategoria VARCHAR(50) NOT NULL UNIQUE
+);
+
+INSERT INTO categoria (nombreCategoria) VALUES
+('limpieza'),
+('electronica'),
+('deportes');
+
+CREATE TABLE producto (
+    idProducto INT AUTO_INCREMENT PRIMARY KEY,
+    nombreProducto VARCHAR(100) NOT NULL,
+    precio DECIMAL(10,2) NOT NULL,
+    idCategoria INT NOT NULL,
+    FOREIGN KEY (idCategoria) REFERENCES categoria(idCategoria)
+);
+
+INSERT INTO producto (nombreProducto, precio, idCategoria) VALUES
+('Cloro', 2.50, 1),
+('Escoba', 3.00, 1),
+('Audifonos', 15.00, 2),
+('Mouse', 8.50, 2),
+('Balon', 20.00, 3),
+('Raqueta', 25.00, 3);
+
+
+*/
+
+
+
+
+*/
+
+
